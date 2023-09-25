@@ -14,7 +14,7 @@
     "allure-playwright": "^2.6.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.37.1",
+    "@playwright/test": "^1.38",
     "rimraf": "^5.0.1"
   }
 }
