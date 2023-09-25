@@ -1,0 +1,20 @@
+{
+  "name": "playwright_test",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:reporter": "npm run clean && playwright test --reporter=allure-playwright",
+    "allure-report": "npx allure generate allure-results && allure open",
+    "clean": "rimraf allure-results/ && rimraf allure-report/ && rimraf test-results/"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "allure-playwright": "^2.6.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.37.1",
+    "rimraf": "^5.0.1"
+  }
+}
