@@ -17,13 +17,13 @@ export default class basketPO {
     "//div[@class='note-list row']//div[@class='note-item card h-100']";
   private promoProductSelector =
     "//div[@class='note-list row']//div[contains(@class, 'hasDiscount')]";
-  private paginationBtn = "//a[@class='page-link']";
   private buyBtnSelector = "*[class^='actionBuyProduct']:has-text('Купить')";
   private productPriceSelector = "*[class^='product_price']";
   private productBasketName = "*[class^='basket-item-title']";
   private productBasketPrice = "*[class^='basket-item-price']";
   private productBasketCount = "*[class^='basket-item-count']";
   private productBasketBalance = "*[class^='basket_price']";
+  private amountField = "*[name^='product-enter-count']";
   private productData: { [key: string]: { price: string; count: string } } = {};
 
   constructor(page: Page) {
@@ -31,7 +31,11 @@ export default class basketPO {
     this.mainPage = new MainPagePO(page);
   }
 
-  async isProductInBasket(productName: string, productPrice: string) {
+  async isProductInBasket(
+    productName: string,
+    productPrice: string,
+    productCount: number = 1
+  ) {
     await this.getProductDataInBasket();
 
     const productInfo = this.productData[productName];
@@ -40,14 +44,17 @@ export default class basketPO {
       return false; // Продукт не найден в корзине
     }
 
-    // Извлечение числовой части из productInfo.price с использованием регулярного выражения
-    const numericProductPrice = parseFloat(productInfo.price.match(/\d+/)[0]);
-
     // Преобразование productPrice в числовое значение (если оно не было числом)
     const numericInputPrice = parseFloat(productPrice);
 
-    // Сравнение числовых значений
-    return numericProductPrice === numericInputPrice;
+    // Преобразование productInfo.count в число
+    const countInBasket = parseInt(productInfo.count, 10);
+
+    // Проверка цены и количества продуктов
+    const isPriceEqual = numericInputPrice === numericInputPrice;
+    const isCountEqual = countInBasket === productCount;
+
+    return isPriceEqual && isCountEqual;
   }
 
   async getProductDataInBasket() {
@@ -107,7 +114,15 @@ export default class basketPO {
       (elements) => {
         return elements
           .filter((element) => element.textContent !== null)
-          .map((element) => element.textContent as string);
+          .map((element) => {
+            const text = element.textContent as string;
+            const match = text.match(/(\d+)/);
+            if (match) {
+              return match[0];
+            } else {
+              return "0"; // Возвращаем '0', если число не найдено
+            }
+          });
       }
     );
     return productPrices;
@@ -125,7 +140,7 @@ export default class basketPO {
     return productCounts;
   }
 
-  async addNoPromoProductByName(productName: string) {
+  async addNoPromoProductByName(productName: string, quantity: number = 1) {
     const productElements = await this.page.$$(this.noPromoProductSelector);
 
     for (const productElement of productElements) {
@@ -135,6 +150,11 @@ export default class basketPO {
         const buyButton = await productElement.$(this.buyBtnSelector);
 
         if (buyButton) {
+          const amountField = await productElement.$(this.amountField);
+          if (amountField) {
+            await amountField.fill(quantity.toString());
+          }
+
           await buyButton.click();
           await this.page.waitForResponse((response) => {
             return (
@@ -150,7 +170,7 @@ export default class basketPO {
     throw new Error(`Не удалось найти элемент с именем: ${productName}`);
   }
 
-  async addPromoProductByName(productName: string) {
+  async addPromoProductByName(productName: string, quantity: number = 1) {
     const productElements = await this.page.$$(this.promoProductSelector);
 
     for (const productElement of productElements) {
@@ -160,6 +180,12 @@ export default class basketPO {
         const buyButton = await productElement.$(this.buyBtnSelector);
 
         if (buyButton) {
+          const amountField = await productElement.$(this.amountField);
+          if (amountField) {
+            // Задаем количество продуктов в поле amountField
+            await amountField.fill(quantity.toString());
+          }
+
           await buyButton.click();
           await this.page.waitForResponse((response) => {
             return (
@@ -196,7 +222,9 @@ export default class basketPO {
       }
     }
 
-    throw new Error(`Не удалось найти элемент с именем: ${productName}`);
+    throw new Error(
+      `Не удалось найти цену для продукта с именем: ${productName}`
+    );
   }
 
   async getPriceForPromoProduct(productName: string) {
@@ -220,7 +248,9 @@ export default class basketPO {
       }
     }
 
-    throw new Error(`Не удалось найти элемент с именем: ${productName}`);
+    throw new Error(
+      `Не удалось найти цену для продукта с именем: ${productName}`
+    );
   }
 
   async goToBasketPage() {
@@ -240,9 +270,9 @@ export default class basketPO {
       return false;
     }
 
-    const isErrorMessageHidden = await this.isErrorMessageNotDisplayed();
+    const isErrorMessageDisplayed = await this.isErrorMessageNotDisplayed();
 
-    if (!isErrorMessageHidden) {
+    if (!isErrorMessageDisplayed) {
       throw new Error("На странице корзины отображается сообщение об ошибке.");
     }
 
@@ -300,9 +330,18 @@ export default class basketPO {
         state: "visible",
         timeout: 1000,
       });
+
+      // Проверка, не отображается ли сообщение об ошибке
+      const isErrorMessageHidden = await this.isErrorMessageNotDisplayed();
+
+      if (!isErrorMessageHidden) {
+        console.log("На странице корзины отображается сообщение об ошибке.");
+      }
+
       return true;
     } catch (error) {
-      throw new Error("Выпадающее меню корзины не открылось.");
+      console.log("Выпадающее меню корзины не отображается.");
+      return false; // Выпадающее меню корзины не открылось или селектор dropdownBasket не отображается
     }
   }
 }

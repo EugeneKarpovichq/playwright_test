@@ -13,6 +13,7 @@ export default class MainPagePO {
   private loginFieldSelector = "//*[@id='loginform-username']";
   private passwordFieldSelector = "//*[@id='loginform-password']";
   private loginButtonSelector = "//*[@name='login-button']";
+  private paginationBtn = "*[class^='page-link']";
 
   constructor(page: Page) {
     this.page = page;
@@ -32,8 +33,23 @@ export default class MainPagePO {
 
   async isLoggedIn() {
     const userAvatar = await this.page.$(this.userAvatar);
-    const userName = await this.page.$(this.userName + `:has-text('${testConfig.username}')`);
+    const userName = await this.page.$(
+      this.userName + `:has-text('${testConfig.username}')`
+    );
 
     return !!userAvatar && !!userName;
+  }
+
+  async goToPage(pageNumber: number) {
+    const pageLink = await this.page.$(
+      `${this.paginationBtn}:has-text('${pageNumber}')`
+    );
+
+    if (pageLink) {
+      await pageLink.click();
+      await this.page.waitForTimeout(1000);
+    } else {
+      throw new Error(`Страница с номером ${pageNumber} не найдена.`);
+    }
   }
 }
