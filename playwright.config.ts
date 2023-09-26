@@ -5,7 +5,7 @@ export default defineConfig({
   timeout: 20 * 1000,
   fullyParallel: true,
   retries: 0,
-  workers: 2,
+  workers: 1,
   reporter: [["line"], ["allure-playwright", { outputFile: "allure-results" }]],
   use: {
     baseURL: "https://enotes.pointschool.ru",

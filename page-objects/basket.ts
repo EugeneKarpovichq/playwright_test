@@ -23,25 +23,12 @@ export default class basketPO {
   private productBasketName = "*[class^='basket-item-title']";
   private productBasketPrice = "*[class^='basket-item-price']";
   private productBasketCount = "*[class^='basket-item-count']";
+  private productBasketBalance = "*[class^='basket_price']";
   private productData: { [key: string]: { price: string; count: string } } = {};
 
   constructor(page: Page) {
     this.page = page;
     this.mainPage = new MainPagePO(page);
-  }
-
-  async getProductDataInBasket() {
-    const names = await this.getProductBasketName();
-    const prices = await this.getProductBasketPrice();
-    const counts = await this.getProductBasketCount();
-
-    // Построение объекта данных о продуктах
-    for (let i = 0; i < names.length; i++) {
-      this.productData[names[i]] = {
-        price: prices[i],
-        count: counts[i],
-      };
-    }
   }
 
   async isProductInBasket(productName: string, productPrice: string) {
@@ -61,6 +48,45 @@ export default class basketPO {
 
     // Сравнение числовых значений
     return numericProductPrice === numericInputPrice;
+  }
+
+  async getProductDataInBasket() {
+    const names = await this.getProductBasketName();
+    const prices = await this.getProductBasketPrice();
+    const counts = await this.getProductBasketCount();
+
+    // Построение объекта данных о продуктах
+    for (let i = 0; i < names.length; i++) {
+      this.productData[names[i]] = {
+        price: prices[i],
+        count: counts[i],
+      };
+    }
+  }
+
+  async getTotalBasketPrice() {
+    const productNames = await this.getProductBasketName();
+    const productPrices = await this.getProductBasketPrice();
+    const productCounts = await this.getProductBasketCount();
+
+    let totalPrice = 0;
+
+    for (let i = 0; i < productNames.length; i++) {
+      const price = parseFloat(productPrices[i].match(/\d+/)[0]);
+      const count = parseInt(productCounts[i], 10);
+      totalPrice += price * count;
+    }
+
+    return totalPrice;
+  }
+
+  async getActualTotalPrice() {
+    const totalPriceText = await this.page.textContent(
+      this.productBasketBalance
+    );
+    const numberTotalPrice = parseFloat(totalPriceText.replace(/[^\d.]/g, ""));
+
+    return numberTotalPrice;
   }
 
   async getProductBasketName() {
@@ -99,8 +125,33 @@ export default class basketPO {
     return productCounts;
   }
 
-  async addNoPromoProduct(productName: string) {
+  async addNoPromoProductByName(productName: string) {
     const productElements = await this.page.$$(this.noPromoProductSelector);
+
+    for (const productElement of productElements) {
+      const textContent = await productElement?.textContent();
+
+      if (textContent && textContent.includes(productName)) {
+        const buyButton = await productElement.$(this.buyBtnSelector);
+
+        if (buyButton) {
+          await buyButton.click();
+          await this.page.waitForResponse((response) => {
+            return (
+              response.url() === "https://enotes.pointschool.ru/basket/get" &&
+              response.status() === 200
+            );
+          });
+          return;
+        }
+      }
+    }
+
+    throw new Error(`Не удалось найти элемент с именем: ${productName}`);
+  }
+
+  async addPromoProductByName(productName: string) {
+    const productElements = await this.page.$$(this.promoProductSelector);
 
     for (const productElement of productElements) {
       const textContent = await productElement?.textContent();
@@ -126,6 +177,30 @@ export default class basketPO {
 
   async getPriceForProduct(productName: string) {
     const productElements = await this.page.$$(this.noPromoProductSelector);
+
+    for (const productElement of productElements) {
+      const textContent = await productElement?.textContent();
+
+      if (textContent && textContent.includes(productName)) {
+        const productPriceElement = await productElement.$(
+          this.productPriceSelector
+        );
+
+        if (productPriceElement) {
+          const productPriceText = await productPriceElement.textContent();
+          const match = productPriceText.match(/\d+/); // Извлекаем числовую часть
+          if (match) {
+            return match[0];
+          }
+        }
+      }
+    }
+
+    throw new Error(`Не удалось найти элемент с именем: ${productName}`);
+  }
+
+  async getPriceForPromoProduct(productName: string) {
+    const productElements = await this.page.$$(this.promoProductSelector);
 
     for (const productElement of productElements) {
       const textContent = await productElement?.textContent();
