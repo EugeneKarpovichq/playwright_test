@@ -19,10 +19,84 @@ export default class basketPO {
     "//div[@class='note-list row']//div[contains(@class, 'hasDiscount')]";
   private paginationBtn = "//a[@class='page-link']";
   private buyBtnSelector = "*[class^='actionBuyProduct']:has-text('Купить')";
+  private productPriceSelector = "*[class^='product_price']";
+  private productBasketName = "*[class^='basket-item-title']";
+  private productBasketPrice = "*[class^='basket-item-price']";
+  private productBasketCount = "*[class^='basket-item-count']";
+  private productData: { [key: string]: { price: string; count: string } } = {};
 
   constructor(page: Page) {
     this.page = page;
     this.mainPage = new MainPagePO(page);
+  }
+
+  async getProductDataInBasket() {
+    const names = await this.getProductBasketName();
+    const prices = await this.getProductBasketPrice();
+    const counts = await this.getProductBasketCount();
+
+    // Построение объекта данных о продуктах
+    for (let i = 0; i < names.length; i++) {
+      this.productData[names[i]] = {
+        price: prices[i],
+        count: counts[i],
+      };
+    }
+  }
+
+  async isProductInBasket(productName: string, productPrice: string) {
+    await this.getProductDataInBasket();
+
+    const productInfo = this.productData[productName];
+
+    if (!productInfo) {
+      return false; // Продукт не найден в корзине
+    }
+
+    // Извлечение числовой части из productInfo.price с использованием регулярного выражения
+    const numericProductPrice = parseFloat(productInfo.price.match(/\d+/)[0]);
+
+    // Преобразование productPrice в числовое значение (если оно не было числом)
+    const numericInputPrice = parseFloat(productPrice);
+
+    // Сравнение числовых значений
+    return numericProductPrice === numericInputPrice;
+  }
+
+  async getProductBasketName() {
+    const productNames = await this.page.$$eval(
+      this.productBasketName,
+      (elements) => {
+        return elements
+          .filter((element) => element.textContent !== null)
+          .map((element) => element.textContent as string);
+      }
+    );
+    return productNames;
+  }
+
+  async getProductBasketPrice() {
+    const productPrices = await this.page.$$eval(
+      this.productBasketPrice,
+      (elements) => {
+        return elements
+          .filter((element) => element.textContent !== null)
+          .map((element) => element.textContent as string);
+      }
+    );
+    return productPrices;
+  }
+
+  async getProductBasketCount() {
+    const productCounts = await this.page.$$eval(
+      this.productBasketCount,
+      (elements) => {
+        return elements
+          .filter((element) => element.textContent !== null)
+          .map((element) => element.textContent as string);
+      }
+    );
+    return productCounts;
   }
 
   async addNoPromoProduct(productName: string) {
@@ -43,6 +117,30 @@ export default class basketPO {
             );
           });
           return;
+        }
+      }
+    }
+
+    throw new Error(`Не удалось найти элемент с именем: ${productName}`);
+  }
+
+  async getPriceForProduct(productName: string) {
+    const productElements = await this.page.$$(this.noPromoProductSelector);
+
+    for (const productElement of productElements) {
+      const textContent = await productElement?.textContent();
+
+      if (textContent && textContent.includes(productName)) {
+        const productPriceElement = await productElement.$(
+          this.productPriceSelector
+        );
+
+        if (productPriceElement) {
+          const productPriceText = await productPriceElement.textContent();
+          const match = productPriceText.match(/\d+/); // Извлекаем числовую часть
+          if (match) {
+            return match[0];
+          }
         }
       }
     }
