@@ -5,13 +5,14 @@
   "scripts": {
     "test:e2e": "playwright test",
     "test:reporter": "npm run clean && npm run test:e2e --reporter=allure-playwright",
-    "allure-report": "npx allure generate allure-results && allure open",
+    "allure-report": "npx allure generate allure-results --clean && npx allure open",
     "clean": "rimraf allure-results/ && rimraf allure-report/ && rimraf test-results/",
     "update-auth": "npx playwright codegen https://enotes.pointschool.ru/ --save-storage=auth.json"
   },
   "author": "Karpovich",
   "license": "ISC",
   "dependencies": {
+    "allure-commandline": "^2.15.0",
     "allure-playwright": "^2.6.0"
   },
   "devDependencies": {
