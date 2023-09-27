@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test:e2e": "playwright test",
-    "test:reporter": "npm run clean && playwright test --reporter=allure-playwright",
+    "test:reporter": "npm run clean && npm run test:e2e --reporter=allure-playwright",
     "allure-report": "npx allure generate allure-results && allure open",
     "clean": "rimraf allure-results/ && rimraf allure-report/ && rimraf test-results/",
     "update-auth": "npx playwright codegen https://enotes.pointschool.ru/ --save-storage=auth.json"

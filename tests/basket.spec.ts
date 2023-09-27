@@ -1,4 +1,4 @@
-import { test, expect, BrowserContext } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import BasketPO from "../page-objects/basket";
 import DropDownBasketPO from "../page-objects/dropdownbasket";
 import MainPagePO from "../page-objects/main-page";
@@ -7,8 +7,7 @@ import { testConfig } from "../config";
 
 let basket: BasketPO, 
   mainPage: MainPagePO, 
-  dropdownBasket: DropDownBasketPO, 
-  context: BrowserContext;
+  dropdownBasket: DropDownBasketPO;
 
 test.describe("Корзина", () => {
   test.beforeEach(async ({ page }) => {
@@ -27,9 +26,6 @@ test.describe("Корзина", () => {
     expect(await dropdownBasket.isBasketCleared()).toBeTruthy();
   });
 
-  test.afterEach(async () => {
-    await dropdownBasket.clearBasket();
-  });
 
   test("Тест-кейс 1. Переход в пустую корзину.", async () => {
     await mainPage.clickBasketBtn();

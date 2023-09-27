@@ -1,14 +1,11 @@
 import { Page } from "@playwright/test";
-import MainPagePO from "./main-page";
 import BasketPO from "./basket";
 
 export default class DropDownBasketPO {
   private page: Page;
-  private mainPage: MainPagePO;
   private basket: BasketPO;
 
   private dropdownBasket = "[aria-labelledby='dropdownBasket']";
-  private clearBasketBtn = "//*[@id='basketContainer']/div[2]/div[3]/a";
   private goToBasketSelector = "//*[@id='basketContainer']/div[2]/div[2]/a";
   private basketItemsCount =
     "//span[@class='basket-count-items badge badge-primary']";
@@ -27,7 +24,6 @@ export default class DropDownBasketPO {
 
   constructor(page: Page) {
     this.page = page;
-    this.mainPage = new MainPagePO(page);
     this.basket = new BasketPO(page);
   }
 
@@ -273,32 +269,6 @@ export default class DropDownBasketPO {
     return true;
   }
 
-  //   async clearBasket() {
-  //     const isCleared = await this.isBasketCleared();
-  //     if (isCleared) {
-  //       console.log("Корзина пуста, операция очистки корзины не требуется.");
-  //     } else {
-  //       await this.mainPage.clickBasketBtn();
-
-  //       try {
-  //         await this.page.waitForSelector(this.dropdownBasket, {
-  //           state: "visible",
-  //           timeout: 5000,
-  //         });
-  //       } catch (error) {
-  //         console.log("Выпадающий список корзины не открылся.");
-  //       }
-
-  //       await this.page.click(this.clearBasketBtn);
-  //       await this.page.waitForResponse((response) => {
-  //         return (
-  //           response.url() === "https://enotes.pointschool.ru/basket/get" &&
-  //           response.status() === 200
-  //         );
-  //       });
-  //     }
-  //   }
-
   async clearBasket() {
     try {
       const contentType = "application/json; charset=UTF-8";
@@ -359,8 +329,7 @@ export default class DropDownBasketPO {
 
       return true;
     } catch (error) {
-      console.log("Выпадающее меню корзины не отображается.");
-      return false; 
+      throw new Error("Выпадающее меню корзины не отображается.");
     }
   }
 }
