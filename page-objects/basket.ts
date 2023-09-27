@@ -11,6 +11,6 @@ export default class basketPO {
 
   async isErrorMessageNotDisplayed() {
     const errorMessageElement = await this.page.$(this.errorMessage);
-    return !errorMessageElement;
+    return errorMessageElement === null;
   }
 }

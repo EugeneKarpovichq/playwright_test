@@ -6,16 +6,12 @@ import { LabelEnum } from "../constants/label.enum";
 import { testConfig } from "../config";
 
 let basket: BasketPO, 
-mainPage: MainPagePO, 
-dropdownBasket: DropDownBasketPO, 
-context: BrowserContext;
+  mainPage: MainPagePO, 
+  dropdownBasket: DropDownBasketPO, 
+  context: BrowserContext;
 
 test.describe("Корзина", () => {
-  test.beforeEach(async ({ browser }) => {
-    context = await browser.newContext({
-      storageState: "./auth.json",
-    });
-    const page = await context.newPage();
+  test.beforeEach(async ({ page }) => {
     basket = new BasketPO(page);
     dropdownBasket = new DropDownBasketPO(page);
     mainPage = new MainPagePO(page);
@@ -23,12 +19,16 @@ test.describe("Корзина", () => {
     await page.goto("/");
     await page.waitForLoadState("networkidle");
 
-    // expect(await mainPage.isLoggedIn()).toBeFalsy();
-    // await mainPage.logIn(testConfig.username, testConfig.password);
-
+    expect(await mainPage.isLoggedIn()).toBeFalsy();
+    await mainPage.logIn(testConfig.username, testConfig.password);
     await dropdownBasket.clearBasket();
-    expect(await dropdownBasket.isBasketCleared()).toBeTruthy();
+
     expect(await mainPage.isLoggedIn()).toBeTruthy();
+    expect(await dropdownBasket.isBasketCleared()).toBeTruthy();
+  });
+
+  test.afterEach(async () => {
+    await dropdownBasket.clearBasket();
   });
 
   test("Тест-кейс 1. Переход в пустую корзину.", async () => {

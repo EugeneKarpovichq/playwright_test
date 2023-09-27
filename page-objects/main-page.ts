@@ -21,6 +21,7 @@ export default class MainPagePO {
 
   async clickBasketBtn() {
     await this.page.click(this.basketBtn);
+    await this.page.waitForTimeout(500);
   }
 
   async logIn(login: string, password: string) {

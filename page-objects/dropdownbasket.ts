@@ -28,6 +28,7 @@ export default class DropDownBasketPO {
   constructor(page: Page) {
     this.page = page;
     this.mainPage = new MainPagePO(page);
+    this.basket = new BasketPO(page);
   }
 
   async isProductInBasket(
@@ -272,29 +273,61 @@ export default class DropDownBasketPO {
     return true;
   }
 
+  //   async clearBasket() {
+  //     const isCleared = await this.isBasketCleared();
+  //     if (isCleared) {
+  //       console.log("Корзина пуста, операция очистки корзины не требуется.");
+  //     } else {
+  //       await this.mainPage.clickBasketBtn();
+
+  //       try {
+  //         await this.page.waitForSelector(this.dropdownBasket, {
+  //           state: "visible",
+  //           timeout: 5000,
+  //         });
+  //       } catch (error) {
+  //         console.log("Выпадающий список корзины не открылся.");
+  //       }
+
+  //       await this.page.click(this.clearBasketBtn);
+  //       await this.page.waitForResponse((response) => {
+  //         return (
+  //           response.url() === "https://enotes.pointschool.ru/basket/get" &&
+  //           response.status() === 200
+  //         );
+  //       });
+  //     }
+  //   }
+
   async clearBasket() {
-    const isCleared = await this.isBasketCleared();
-    if (isCleared) {
-      console.log("Корзина пуста, операция очистки корзины не требуется.");
-    } else {
-      await this.mainPage.clickBasketBtn();
+    try {
+      const contentType = "application/json; charset=UTF-8";
+      const csrfToken =
+        "p6qZaAp8SeDlzCrqK20ECilSHVDNBI0kxulhYEUFQ43C6cxYUgQqzb2uRLVZFV1DahBEJvxw3X2VpjA_fW5w2w==";
+      const cookie =
+        "PHPSESSID=17fe90df87a4d52f22a6ecbc5a95c1b8; _csrf=724bc4f2a649890051576b28274b56e31582dac89b0fe793163d26965af996faa%3A2%3A%7Bi%3A0%3Bs%3A5%3A%22_csrf%22%3Bi%3A1%3Bs%3A32%3A%22eCU0Xxc-Xbn_rxYICBYv1tPYSOQ_8k3V%22%3B%7D";
 
-      try {
-        await this.page.waitForSelector(this.dropdownBasket, {
-          state: "visible",
-          timeout: 5000,
-        });
-      } catch (error) {
-        console.log("Выпадающий список корзины не открылся.");
+      const response = await this.page.goto(
+        "https://enotes.pointschool.ru/basket/clear",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": contentType,
+            "X-Csrf-Token": csrfToken,
+            Cookie: cookie,
+          },
+        }
+      );
+      await this.page.goto("/");
+      await this.page.waitForLoadState("networkidle");
+
+      if (response?.status() === 200) {
+        console.log("Корзина успешно очищена через API.");
+      } else {
+        console.error("Произошла ошибка при очистке корзины через API.");
       }
-
-      await this.page.click(this.clearBasketBtn);
-      await this.page.waitForResponse((response) => {
-        return (
-          response.url() === "https://enotes.pointschool.ru/basket/get" &&
-          response.status() === 200
-        );
-      });
+    } catch (error) {
+      console.error("Произошла ошибка при выполнении запроса к API:", error);
     }
   }
 
@@ -324,18 +357,10 @@ export default class DropDownBasketPO {
         timeout: 1000,
       });
 
-      // Проверка, не отображается ли сообщение об ошибке
-      const isErrorMessageHidden =
-        await this.basket.isErrorMessageNotDisplayed();
-
-      if (!isErrorMessageHidden) {
-        console.log("На странице корзины отображается сообщение об ошибке.");
-      }
-
       return true;
     } catch (error) {
       console.log("Выпадающее меню корзины не отображается.");
-      return false; // Выпадающее меню корзины не открылось или селектор dropdownBasket не отображается
+      return false; 
     }
   }
 }
