@@ -2,7 +2,7 @@ import { test, expect, BrowserContext } from "@playwright/test";
 import BasketPO from "../page-objects/basket";
 import MainPagePO from "../page-objects/main-page";
 import { LabelEnum } from "../constants/label.enum";
-import { testConfig } from "../config";
+// import { testConfig } from "../config";
 
 let basket: BasketPO, mainPage: MainPagePO, context: BrowserContext;
 
