@@ -28,7 +28,7 @@ test.describe("Корзина", () => {
     await context.close();
   });
 
-  test("Тест-кейс 1. Переход в пустую корзину.", async ({ page }) => {
+  test("Тест-кейс 1. Переход в пустую корзину.", async () => {
     await mainPage.clickBasketBtn();
     expect(await basket.isDropDownBasketOpened()).toBeTruthy();
 
@@ -36,7 +36,7 @@ test.describe("Корзина", () => {
     expect(await basket.isBasketPageOpened()).toBeTruthy();
   });
 
-  test("Тест-кейс 2. Переход в корзину с 1 неакционным товаром.", async ({ page }) => {
+  test("Тест-кейс 2. Переход в корзину с 1 неакционным товаром.", async () => {
     await basket.addNoPromoProductByName(LabelEnum.noPromoProduct_1);
     const productPrice = await basket.getPriceForProduct(LabelEnum.noPromoProduct_1);
     expect(await basket.countProductsInBasket()).toEqual("1");
@@ -49,7 +49,7 @@ test.describe("Корзина", () => {
     expect(await basket.isBasketPageOpened()).toBeTruthy();
   });
 
-  test("Тест-кейс 3. Переход в корзину с 1 акционным товаром.", async ({ page }) => {
+  test("Тест-кейс 3. Переход в корзину с 1 акционным товаром.", async () => {
     await basket.addPromoProductByName(LabelEnum.promoProduct_1);
     const productPrice = await basket.getPriceForPromoProduct(LabelEnum.promoProduct_1);
     expect(await basket.countProductsInBasket()).toEqual("1");
@@ -65,7 +65,7 @@ test.describe("Корзина", () => {
     expect(await basket.isBasketPageOpened()).toBeTruthy();
   });
 
-  test("Тест-кейс 4. Переход в корзину с 9 разными товарами.", async ({ page }) => {
+  test("Тест-кейс 4. Переход в корзину с 9 разными товарами.", async () => {
     await basket.addPromoProductByName(LabelEnum.promoProduct_1);
     expect(await basket.countProductsInBasket()).toEqual("1");
 
@@ -112,7 +112,7 @@ test.describe("Корзина", () => {
     expect(await basket.isBasketPageOpened()).toBeTruthy();
   });
 
-  test("Тест-кейс 5. Переход в корзину с 9 акционными товарами одного наименования.", async ({ page }) => {
+  test("Тест-кейс 5. Переход в корзину с 9 акционными товарами одного наименования.", async () => {
     await basket.addPromoProductByName(LabelEnum.promoProduct_3, 9);
 
     const promoProduct_3_price = await basket.getPriceForPromoProduct(LabelEnum.promoProduct_3);
