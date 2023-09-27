@@ -6,7 +6,8 @@
     "test:e2e": "playwright test",
     "test:reporter": "npm run clean && playwright test --reporter=allure-playwright",
     "allure-report": "npx allure generate allure-results && allure open",
-    "clean": "rimraf allure-results/ && rimraf allure-report/ && rimraf test-results/"
+    "clean": "rimraf allure-results/ && rimraf allure-report/ && rimraf test-results/",
+    "update-auth": "npx playwright codegen https://enotes.pointschool.ru/ --save-storage=auth.json"
   },
   "author": "",
   "license": "ISC",

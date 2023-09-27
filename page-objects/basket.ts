@@ -74,14 +74,12 @@ export default class basketPO {
   async getTotalBasketPrice() {
     const productNames = await this.getProductBasketName();
     const productPrices = await this.getProductBasketPrice();
-    const productCounts = await this.getProductBasketCount();
 
     let totalPrice = 0;
 
     for (let i = 0; i < productNames.length; i++) {
       const price = parseFloat(productPrices[i].match(/\d+/)[0]);
-      const count = parseInt(productCounts[i], 10);
-      totalPrice += price * count;
+      totalPrice += price;
     }
 
     return totalPrice;

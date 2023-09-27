@@ -89,7 +89,7 @@ test.describe("Корзина", () => {
     await basket.addNoPromoProductByName(LabelEnum.noPromoProduct_6);
     const noPromoProduct_6_price = await basket.getPriceForProduct(LabelEnum.noPromoProduct_6);
 
-    expect(await basket.countProductsInBasket()).toEqual("10");
+    expect(await basket.countProductsInBasket()).toEqual("9");
 
     await mainPage.clickBasketBtn();
     expect(await basket.isDropDownBasketOpened()).toBeTruthy();

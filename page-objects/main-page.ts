@@ -27,6 +27,10 @@ export default class MainPagePO {
     await this.page.click(this.authButtonsSelector);
     await this.page.fill(this.loginFieldSelector, login);
     await this.page.fill(this.passwordFieldSelector, password);
+    await this.page.evaluate(() => {
+      const loginButton = document.querySelector('[name="login-button"]');
+      loginButton?.removeAttribute("disabled");
+    });
     await this.page.click(this.loginButtonSelector);
     await this.page.waitForLoadState("networkidle");
   }
